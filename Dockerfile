@@ -8,6 +8,6 @@ COPY . .
 RUN go mod download
 RUN CGO_ENABLED=0 GOOS=linux go build -o edugo
 
-EXPOSE 8080
+EXPOSE 80
 
 CMD [ "./edugo" ]
