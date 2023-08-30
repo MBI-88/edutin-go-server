@@ -8,9 +8,9 @@ import (
 )
 
 func main() {
-	fmt.Println("[*] Server running in localhost port 8080")
+	fmt.Println("[*] Server running in localhost port 80")
 	router := server.Router()
-	if err := http.ListenAndServe(":8080", router); err != nil {
+	if err := http.ListenAndServe(":80", router); err != nil {
 		log.Fatalf("%s\n", err)
 	}
 
