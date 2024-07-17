@@ -10,6 +10,22 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"
         async></script>
+    <style>
+        .payment-container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .card-visa {
+            background-color: #c07803;
+        }
+        .card-euro {
+            background-color: #0d9be8 ;
+        }
+    </style>
     <title>Pagos</title>
 </head>
 
@@ -17,7 +33,7 @@
     <main>
         <nav class="navbar navbar-expand-lg bg-body-tertiary">
             <div class="container-fluid">
-                <a class="navbar-brand" href="#">Catálogo</a>
+                <a class="navbar-brand" href="#">Maikel Barrios Insua</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                     data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false"
                     aria-label="Toggle navigation">
@@ -26,7 +42,7 @@
                 <div class="collapse navbar-collapse" id="navbarNavDropdown">
                     <ul class="navbar-nav">
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="/">Tienda</a>
+                            <a class="nav-link" aria-current="page" href="/">Tienda</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="/car">Carrito</a>
@@ -55,29 +71,112 @@
                 </div>
             </div>
         </nav>
-        <section class="d-flex flex-column align-items-center mt-4 mb-4">
-            <div class="mt-5 w-25">
-                <form action="/pays" method="post" class="form-control">
-                    <label class="form-label" for="inputId">Articulo: </label>
-                    <input type="text" value="{{.}}" name="id" id="inputId" readonly class="form-check-input border-0">
-                    <div class="d-flex flex-row align-items-center flex-wrap">
-                        <label class="form-label" for="selectOptions">Selecciona</label>
-                        <select class="form-select" aria-label="Default seleted" id="selectOptions">
-                            <option value="1" seleted>Visa</option>
-                            <option value="2">Master Car</option>
-                            <option value="3">Itau</option>
-                            <option value="4">Prex</option>
-                            <option value="5">OCA Blue</option>
+
+        <div class="container payment-container">
+            <div class="text-center mb-4">
+                <h2>Liberbank</h2>
+                <h4>Confirmación del pago</h4>
+            </div>
+            <form action="/pays" method="post">
+                <div class="d-flex flex-lg-row gap-3 justify-content-between">
+                    <div>
+                        <div class="form-group">
+                            <label for="paymentMethod">Forma de pago</label>
+                            <div class="border-top">
+                                <div class="form-check border p-5 card-visa mb-2">
+                                    <input class="form-check-input" type="radio" name="paymentMethod" id="creditCard"
+                                        value="creditCard" checked>
+                                    <label class="form-check-label text-white" for="creditCard">
+                                        Tarjeta de crédito
+                                        <img src="https://via.placeholder.com/20x20" alt="Visa"> 
+                                        <img
+                                            src="https://via.placeholder.com/20x20" alt="MasterCard">
+                                    </label>
+                                </div>
+                                <div class="form-check border p-5 card-euro">
+                                    <input class="form-check-input" type="radio" name="paymentMethod" id="euro6000"
+                                        value="euro6000">
+                                    <label class="form-check-label text-white" for="euro6000">
+                                        Tarjetero EURO 6000 <img src="https://via.placeholder.com/20x20"
+                                            alt="EURO 6000">
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <select class="form-control mt-2" id="exchange">
+                            <option>EURO</option>
+                            <option>USD</option>
                         </select>
                     </div>
 
-                    <button type="submit" class="btn btn-primary mt-2">Comprar</button>
-                </form>
-            </div>
+                    <div>
+                        <div class="form-group">
+                            <label for="operationNumber">Número de operación</label>
+                            <input type="text" class="form-control" id="operationNumber" value="prueba" readonly>
+                        </div>
 
-        </section>
+                        <div class="form-group">
+                            <label for="amount">Importe</label>
+                            <input type="text" class="form-control" id="amount" value="1 €" readonly>
+                        </div>
 
+                        <div class="form-group">
+                            <label for="cardNumber">Tarjeta</label>
+                            <input type="text" class="form-control" id="cardNumber" placeholder="Número de tarjeta">
+                        </div>
 
+                        <div class="form-group">
+                            <label for="expiryDate">Fecha caducidad (MM/AAAA)</label>
+                            <div class="d-flex w-fit">
+                                <div class="col">
+                                    <select class="form-control" id="expiryMonth">
+                                        <option>01</option>
+                                        <option>02</option>
+                                        <option>03</option>
+                                        <option>04</option>
+                                        <option>05</option>
+                                        <option>06</option>
+                                        <option>07</option>
+                                        <option>08</option>
+                                        <option>09</option>
+                                        <option>10</option>
+                                        <option>11</option>
+                                        <option>12</option>
+                                    </select>
+                                </div>
+                                <div class="col">
+                                    <select class="form-control" id="expiryYear">
+                                        <option>2023</option>
+                                        <option>2024</option>
+                                        <option>2025</option>
+                                        <option>2026</option>
+                                        <option>2027</option>
+                                        <option>2028</option>
+                                        <option>2029</option>
+                                        <option>2030</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="securityCode">Código seguridad</label>
+                            <input type="text" class="form-control" id="securityCode" placeholder="CVV">
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+                <div class="form-group mt-3 d-flex justify-content-between px-1">
+                    <button type="button" class="btn btn-secondary" onclick="window.history.back()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Pagar</button>
+                </div>
+            </form>
+        </div>
+
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
     </main>
 

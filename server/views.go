@@ -192,7 +192,7 @@ func Pays(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "500 %s", err)
 		} else {
 			id := r.URL.Query().Get("id")
-			page.Execute(w, id)
+			page.Execute(w, id) // agreagar valor de la moneda 
 		}
 	case "POST":
 		file, err := os.OpenFile(databasePath, os.O_RDWR, 0775)

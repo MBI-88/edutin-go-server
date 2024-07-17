@@ -13,7 +13,4 @@ func main() {
 	if err := http.ListenAndServe(":80", router); err != nil {
 		log.Fatalf("%s\n", err)
 	}
-
-	
-
 }
