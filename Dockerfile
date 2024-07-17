@@ -8,6 +8,7 @@ RUN go mod tidy && \
 
 FROM alpine:3.20 as deployment
 WORKDIR /app
+COPY ./data .
 
 COPY --from=builder /app/server ./server
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup && \

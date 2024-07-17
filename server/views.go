@@ -191,8 +191,37 @@ func Pays(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Fprintf(w, "500 %s", err)
 		} else {
-			id := r.URL.Query().Get("id")
-			page.Execute(w, id) // agreagar valor de la moneda 
+			strId := r.URL.Query().Get("id")
+			id, err := strconv.Atoi(strId)
+			if err != nil {
+				fmt.Fprintf(w, "500 %s", err)
+				return
+			}
+			file, err := os.OpenFile(databasePath, os.O_RDONLY, 0775)
+			defer file.Close()
+			if err != nil {
+				fmt.Fprintf(w, "500 %s", err)
+				return
+			}
+
+			decoder := json.NewDecoder(file)
+			var (
+				jsdata []data
+				obj data
+			)
+
+			if err := decoder.Decode(&jsdata); err != nil {
+				fmt.Fprintf(w, "500 %s", err)
+				return
+			}
+
+			for _,item := range jsdata {
+				if item.ID == id {
+					obj = item
+				}
+			}
+
+			page.Execute(w, obj) // agreagar valor de la moneda 
 		}
 	case "POST":
 		file, err := os.OpenFile(databasePath, os.O_RDWR, 0775)

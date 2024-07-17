@@ -19,11 +19,13 @@
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
+
         .card-visa {
             background-color: #c07803;
         }
+
         .card-euro {
-            background-color: #0d9be8 ;
+            background-color: #0d9be8;
         }
     </style>
     <title>Pagos</title>
@@ -88,9 +90,8 @@
                                         value="creditCard" checked>
                                     <label class="form-check-label text-white" for="creditCard">
                                         Tarjeta de crédito
-                                        <img src="https://via.placeholder.com/20x20" alt="Visa"> 
-                                        <img
-                                            src="https://via.placeholder.com/20x20" alt="MasterCard">
+                                        <img src="https://via.placeholder.com/20x20" alt="Visa">
+                                        <img src="https://via.placeholder.com/20x20" alt="MasterCard">
                                     </label>
                                 </div>
                                 <div class="form-check border p-5 card-euro">
@@ -104,25 +105,31 @@
                             </div>
                         </div>
                         <select class="form-control mt-2" id="exchange">
-                            <option>EURO</option>
                             <option>USD</option>
+                            <option>EURO</option>
                         </select>
                     </div>
 
                     <div>
                         <div class="form-group">
                             <label for="operationNumber">Número de operación</label>
-                            <input type="text" class="form-control" id="operationNumber" value="prueba" readonly>
+                            <input type="text" class="form-control" id="operationNumber" value="Test" readonly>
                         </div>
 
                         <div class="form-group">
                             <label for="amount">Importe</label>
-                            <input type="text" class="form-control" id="amount" value="1 €" readonly>
+                            <input type="text" class="form-control" id="amount" value="{{.PriceUSD}}" readonly>
+                            <input type="number" hidden value="{{.PriceEUR}}" id="PriceEUR">
+                            <input type="number" hidden value="{{.PriceUSD}}" id="PriceUSD">
                         </div>
 
                         <div class="form-group">
                             <label for="cardNumber">Tarjeta</label>
-                            <input type="text" class="form-control" id="cardNumber" placeholder="Número de tarjeta">
+                            <input type="text" class="form-control" id="cardNumber" 
+                            placeholder="Número de tarjeta" value=""
+                            oninput="validateCardNumber(this)"
+                            >
+                            <p style="color: red;" id="errorCard" hidden></p>
                         </div>
 
                         <div class="form-group">
@@ -177,6 +184,29 @@
         <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <script>
+            "use strict"
+            
+            const handlerCurrencyChange = () => {
+                const amount = document.getElementById("amount")
+                const exchange = document.getElementById("exchange").value
+                const tp = exchange == "EURO" ? document.getElementById("PriceEUR").value : document.getElementById("PriceUSD").value
+                amount.value = tp
+            }
+            document.getElementById("exchange").addEventListener("change", handlerCurrencyChange);
+
+            const validateCardNumber = () => {
+                const reg = /[a-zA-Z0-9]{8}/
+                const cardNumber = document.getElementById("cardNumber")
+                if (!reg.test(cardNumber.value)) {
+                    document.getElementById("errorCard").innerHTML = "Error en tarjeta"
+                    document.getElementById("errorCard").hidden = false
+                } else {
+                    document.getElementById("errorCard").hidden = true
+                }
+            }
+
+        </script>
 
     </main>
 
