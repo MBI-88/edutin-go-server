@@ -207,7 +207,7 @@ func Pays(w http.ResponseWriter, r *http.Request) {
 			decoder := json.NewDecoder(file)
 			var (
 				jsdata []data
-				obj data
+				obj    data
 			)
 
 			if err := decoder.Decode(&jsdata); err != nil {
@@ -215,13 +215,15 @@ func Pays(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			for _,item := range jsdata {
+			for _, item := range jsdata {
 				if item.ID == id {
-					obj = item
+					item.PriceEUR *= float32(item.Amount)
+					item.PriceUSD *= float32(item.Amount) 
+ 					obj = item
 				}
 			}
 
-			page.Execute(w, obj) // agreagar valor de la moneda 
+			page.Execute(w, obj)
 		}
 	case "POST":
 		file, err := os.OpenFile(databasePath, os.O_RDWR, 0775)
@@ -247,7 +249,7 @@ func Pays(w http.ResponseWriter, r *http.Request) {
 				encoder := json.NewEncoder(file)
 				if err := encoder.Encode(jsdata); err != nil {
 					fmt.Fprintf(w, "500 %s", err)
-				} 
+				}
 
 			}
 			http.Redirect(w, r, "/car", http.StatusSeeOther)
@@ -278,7 +280,10 @@ func Car(w http.ResponseWriter, r *http.Request) {
 						fmt.Fprintf(w, "500 %s", err)
 					} else {
 						var cardata []data
-						id, _ := strconv.Atoi(r.FormValue("id"))
+						id, er := strconv.Atoi(r.FormValue("id"))
+						if er != nil {
+							fmt.Fprintf(w, "500 %s", err)
+						}
 						for _, car := range jdata {
 							if car.ID == id {
 								car.Selected = true
@@ -302,7 +307,7 @@ func Car(w http.ResponseWriter, r *http.Request) {
 				}
 
 			}
-		} else {
+		} else if r.FormValue("delete") == "delete" {
 			if err != nil {
 				fmt.Fprintf(w, "500 %s", err)
 			} else {
@@ -317,16 +322,20 @@ func Car(w http.ResponseWriter, r *http.Request) {
 						fmt.Fprintf(w, "500 %s", err)
 					} else {
 						var cardata []data
-						id, _ := strconv.Atoi(r.FormValue("id"))
+						id, er := strconv.Atoi(r.FormValue("id"))
+						if er != nil {
+							fmt.Fprintf(w, "500 %s", er)
+						}
 						if id == -1 {
 							for _, car := range jdata {
 								car.Selected = false
-
+								car.Amount = 0
 							}
 						} else {
 							for _, car := range jdata {
 								if car.ID == id {
 									car.Selected = false
+									car.Amount = 0
 									break
 								}
 							}
@@ -349,6 +358,55 @@ func Car(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 			}
+
+		} else if r.FormValue("delete") == "add" {
+			if err != nil {
+				fmt.Fprintf(w, "500 %s", err)
+			} else {
+				file, err := os.OpenFile(databasePath, os.O_RDWR, 0775)
+				defer file.Close()
+				if err != nil {
+					fmt.Fprintf(w, "500 %s", err)
+				} else {
+					decoder := json.NewDecoder(file)
+					var jdata []*data
+					if err := decoder.Decode(&jdata); err != nil {
+						fmt.Fprintf(w, "500 %s", err)
+					} else {
+						var cardata []data
+						id, er := strconv.Atoi(r.FormValue("id"))
+						if er != nil {
+							fmt.Fprintf(w, "500 %s", er)
+						}
+						amount, err := strconv.Atoi(r.FormValue("amount"))
+						if err != nil  {
+							fmt.Fprintf(w, "500 %s", er)
+						}
+
+						for _, car := range jdata {
+							if car.ID == id {
+								car.Amount += int32(amount)
+								break
+							}
+						}
+
+						file.Truncate(0)
+						file.Seek(0, 0)
+						encoder := json.NewEncoder(file)
+						if err := encoder.Encode(jdata); err != nil {
+							fmt.Fprintf(w, "500 %s", err)
+						} else {
+							for _, car := range jdata {
+								if car.Selected == true {
+									cardata = append(cardata, *car)
+								}
+							}
+						}
+						page.Execute(w, cardata)
+					}
+				}
+			}
+
 		}
 
 	case "GET":

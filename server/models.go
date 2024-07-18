@@ -8,4 +8,5 @@ type data struct {
 	Selected bool    `json:"selected"`
 	PriceEUR float32 `json:"price_eur"`
 	PriceUSD float32 `json:"price_usd"`
+	Amount   int32   `json:"amount"`
 }
