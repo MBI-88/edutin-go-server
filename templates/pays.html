@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCtype html>
 <html lang="en">
 
 <head>
@@ -79,96 +79,68 @@
                 <h2>Liberbank</h2>
                 <h4>Confirmación del pago</h4>
             </div>
-            <form action="/pays" method="post">
-                <div class="d-flex flex-lg-row gap-3 justify-content-between">
-                    <div>
-                        <div class="form-group">
-                            <label for="paymentMethod">Forma de pago</label>
-                            <div class="border-top">
-                                <div class="form-check border p-5 card-visa mb-2">
-                                    <input class="form-check-input" type="radio" name="paymentMethod" id="creditCard"
-                                        value="creditCard" checked>
-                                    <label class="form-check-label text-white" for="creditCard">
-                                        Tarjeta de crédito
-                                        <img src="https://via.placeholder.com/20x20" alt="Visa">
-                                        <img src="https://via.placeholder.com/20x20" alt="MasterCard">
-                                    </label>
-                                </div>
-                                <div class="form-check border p-5 card-euro">
-                                    <input class="form-check-input" type="radio" name="paymentMethod" id="euro6000"
-                                        value="euro6000">
-                                    <label class="form-check-label text-white" for="euro6000">
-                                        Tarjetero EURO 6000 <img src="https://via.placeholder.com/20x20"
-                                            alt="EURO 6000">
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                        <select class="form-control mt-2" id="exchange">
+            <form action="https://pgw.ceca.es/tpvweb/tpv/compra.action" method="post"
+                enctype="application/x-www-form-urlencoded">
+                <div class="form-group d-flex flex-column" id="hiddenIpunts">
+                    <input name="MerchantID" type=hidden value="082108630">
+                    <input name="AcquirerBIN" type=hidden value="0000554002">
+                    <input name="TerminalID" type=hidden value="00000003">
+                    <input name="URL_OK" type=hidden value="https://edugo-unir.onrender.com">
+                    <input name="URL_NOK" type=hidden value="https://edugo-unir.onrender.com/car">
+                    <input name="Firma" type=hidden value="" id="sign" >
+                    <input name="Cifrado" type=hidden value="SHA2">
+                    <input name="TipoMoneda" type=hidden value="978" id="metaEx">
+                    <input name="Exponente" type=hidden value="2">
+                    <input name="Pago_soportado" type=hidden value="SSL">
+                    <input name="Idioma" type="hidden" value="1">
+                </div>
+
+                <div class="d-flex flex-column gap-3 flex-lg-row  justify-content-between align-top">
+                    <div style="width: 50%;">
+                        <label for="exchange">Tipo de moneda</label>
+                        <select class="form-control" id="exchange">
                             <option>USD</option>
                             <option>EURO</option>
                         </select>
+
+                        <label for="product mt-2">Producto</label>
+                        <div style="height: 50%;" id="product">
+                            <img src="{{.Img}}"  alt="no image" class="img-fluid img-thumbnail rounded">
+                        </div>
                     </div>
 
-                    <div>
+                    <div style="min-width: 50%;">
                         <div class="form-group">
                             <label for="operationNumber">Número de operación</label>
-                            <input type="text" class="form-control" id="operationNumber" value="Test" readonly>
+                            <input type="text" class="form-control" name="Num_operacion" id="operationNumber"
+                                value="prueba" readonly>
                         </div>
 
                         <div class="form-group">
                             <label for="amount">Importe</label>
-                            <input type="text" class="form-control" id="amount" value="{{.PriceUSD}}" readonly>
+                            <input type="text" class="form-control" name="Importe" id="amount" value="{{.PriceUSD}}"
+                                readonly>
                             <input type="number" hidden value="{{.PriceEUR}}" id="PriceEUR">
                             <input type="number" hidden value="{{.PriceUSD}}" id="PriceUSD">
                         </div>
 
                         <div class="form-group">
                             <label for="cardNumber">Tarjeta</label>
-                            <input type="text" class="form-control" id="cardNumber" 
-                            placeholder="Número de tarjeta" value=""
-                            oninput="validateCardNumber(this)"
-                            >
-                            <p style="color: red;" id="errorCard" hidden></p>
+                            <input type="text" class="form-control" id="cardNumber" placeholder="Número de tarjeta"
+                                pattern="[0-9]{14,16}" value="" name="PAN" required>
                         </div>
 
                         <div class="form-group">
                             <label for="expiryDate">Fecha caducidad (MM/AAAA)</label>
-                            <div class="d-flex w-fit">
-                                <div class="col">
-                                    <select class="form-control" id="expiryMonth">
-                                        <option>01</option>
-                                        <option>02</option>
-                                        <option>03</option>
-                                        <option>04</option>
-                                        <option>05</option>
-                                        <option>06</option>
-                                        <option>07</option>
-                                        <option>08</option>
-                                        <option>09</option>
-                                        <option>10</option>
-                                        <option>11</option>
-                                        <option>12</option>
-                                    </select>
-                                </div>
-                                <div class="col">
-                                    <select class="form-control" id="expiryYear">
-                                        <option>2023</option>
-                                        <option>2024</option>
-                                        <option>2025</option>
-                                        <option>2026</option>
-                                        <option>2027</option>
-                                        <option>2028</option>
-                                        <option>2029</option>
-                                        <option>2030</option>
-                                    </select>
-                                </div>
-                            </div>
+                            <input type="text" class="form-control" id="expiryDate" name="Caducidad"
+                                placeholder="MM/YYYY" required pattern="[0-9]{2}/[0-9]{4}" title="Formato MM/YYYY">
                         </div>
 
                         <div class="form-group">
                             <label for="securityCode">Código seguridad</label>
-                            <input type="text" class="form-control" id="securityCode" placeholder="CVV">
+                            <input type="text" class="form-control" id="securityCode" name="CVV2" placeholder="CVV"
+                                pattern="[0-9]{3,4}"
+                                required>
                         </div>
                     </div>
                 </div>
@@ -186,25 +158,38 @@
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
         <script>
             "use strict"
-            
-            const handlerCurrencyChange = () => {
+
+            const cryKey = "87401456"
+            const MerchantID = "082108630"
+            const AcquirerBIN = "0000554002"
+            const TerminalID = "00000003"
+            const NumOp = "prueba"
+            let exEx = 0
+            const Exponente = 2
+            const Cifrado = "SHA2"
+            const URL_NOK = "https://edugo-unir.onrender.com/car"
+            const URL_OK = "https://edugo-unir.onrender.com"
+
+            const handleCrySHA256 = async (impor) => {
+                const encoder = new TextEncoder()
+                const data = encoder.encode(`${cryKey}${MerchantID}${AcquirerBIN}${TerminalID}${NumOp}${impor}${exEx}${Exponente}${Cifrado}${URL_OK}${URL_NOK}`)
+                const hashbuffer = await crypto.subtle.digest("SHA-256", data)
+                const hashArray = Array.from(new Uint8Array(hashbuffer))
+                const hashHex = hashArray.map(b => b.toString(16).padStart(2,'0')).join('')
+                return hashHex
+            }
+
+            const handlerCurrencyChange = async () => {
                 const amount = document.getElementById("amount")
                 const exchange = document.getElementById("exchange").value
                 const tp = exchange == "EURO" ? document.getElementById("PriceEUR").value : document.getElementById("PriceUSD").value
                 amount.value = tp
-            }
-            document.getElementById("exchange").addEventListener("change", handlerCurrencyChange);
+                exchange === "EURO" ? (document.getElementById("metaEx").value = 978, exEx = 978) : (document.getElementById("metaEx").value = 840, exEx = 840)
 
-            const validateCardNumber = () => {
-                const reg = /[a-zA-Z0-9]{8}/
-                const cardNumber = document.getElementById("cardNumber")
-                if (!reg.test(cardNumber.value)) {
-                    document.getElementById("errorCard").innerHTML = "Error en tarjeta"
-                    document.getElementById("errorCard").hidden = false
-                } else {
-                    document.getElementById("errorCard").hidden = true
-                }
+                document.getElementById("sign").value = await handleCrySHA256(tp)
+
             }
+            document.getElementById("exchange").addEventListener("change", handlerCurrencyChange)
 
         </script>
 
