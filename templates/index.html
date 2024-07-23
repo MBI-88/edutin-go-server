@@ -55,9 +55,9 @@
                 </div>
             </div>
         </nav>
-        <section class="container mt-4 mb-4">
+        <section class="container-lg mt-4 mb-4">
 
-            <ul class="d-grid">
+            <ul class="row row-cols-1 row-cols-lg-3">
                 <!--variable-->
                 {{ range .}}
                 <li id={{.ID}} class="list-group-item align-items-center m-auto p-3">
@@ -66,7 +66,7 @@
                             <div class="col-md-4 p-2">
                                 <img src={{.Img}} class="img-fluid rounded-start" alt={{.Cate}}>
                             </div>
-                            <div class="col-md-8">
+                            <div class="col">
                                 <div class="card-body">
                                     <h5 class="card-title" style="color: gray;">{{.Cate}}</h5>
                                     <p class="card-text" style="color: gray;">Lorem ipsum, dolor sit amet consectetur adipisicing elit.

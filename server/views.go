@@ -287,6 +287,7 @@ func Car(w http.ResponseWriter, r *http.Request) {
 						for _, car := range jdata {
 							if car.ID == id {
 								car.Selected = true
+								car.Amount = 1
 								break
 							}
 						}
