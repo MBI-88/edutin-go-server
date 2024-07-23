@@ -79,44 +79,17 @@
                 <h2>Liberbank</h2>
                 <h4>Confirmación del pago</h4>
             </div>
-            <form action="https://pgw.ceca.es/tpvweb/tpv/compra.action" method="post"
-                enctype="application/x-www-form-urlencoded">
-                <div class="form-group d-flex flex-column" id="hiddenIpunts">
-                    <input name="MerchantID" type=hidden value="082108630">
-                    <input name="AcquirerBIN" type=hidden value="0000554002">
-                    <input name="TerminalID" type=hidden value="00000003">
-                    <input name="URL_OK" type=hidden value="https://edugo-unir.onrender.com">
-                    <input name="URL_NOK" type=hidden value="https://edugo-unir.onrender.com/car">
-                    <input name="Firma" type=hidden value="" id="sign" >
-                    <input name="Cifrado" type=hidden value="SHA2">
-                    <input name="TipoMoneda" type=hidden value="978" id="metaEx">
-                    <input name="Exponente" type=hidden value="2">
-                    <input name="Pago_soportado" type=hidden value="SSL">
-                    <input name="Idioma" type="hidden" value="1">
-                </div>
-
+            <form action="#" method="post" enctype="application/x-www-form-urlencoded">
                 <div class="d-flex flex-column gap-3 flex-lg-row  justify-content-between align-top">
                     <div style="width: 50%;">
-                        <label for="exchange">Tipo de moneda</label>
-                        <select class="form-control" id="exchange">
-                            <option>USD</option>
-                            <option>EURO</option>
-                        </select>
-                        <label for="total">Cantidad</label>
-                        <input class="form-control" value="{{ .Amount }}" id="total" readonly>
+                       
                         <label for="product mt-2">Producto</label>
                         <div style="height: 50%;" id="product">
-                            <img src="{{.Img}}"  alt="no image" class="img-fluid img-thumbnail rounded">
+                            <img src="{{.Img}}" alt="no image" class="img-fluid img-thumbnail rounded">
                         </div>
                     </div>
 
                     <div style="min-width: 50%;">
-                        <div class="form-group">
-                            <label for="operationNumber">Número de operación</label>
-                            <input type="text" class="form-control" name="Num_operacion" id="operationNumber"
-                                value="prueba" readonly>
-                        </div>
-
                         <div class="form-group">
                             <label for="amount">Importe</label>
                             <input type="text" class="form-control" name="Importe" id="amount" value="{{.PriceUSD}}"
@@ -125,72 +98,69 @@
                             <input type="number" hidden value="{{.PriceUSD}}" id="PriceUSD">
                         </div>
 
-                        <div class="form-group">
-                            <label for="cardNumber">Tarjeta</label>
-                            <input type="text" class="form-control" id="cardNumber" placeholder="Número de tarjeta"
-                                pattern="[0-9]{14,16}" value="" name="PAN" required>
-                        </div>
+                        <label for="total">Cantidad</label>
+                        <input class="form-control" value="{{ .Amount }}" id="total" readonly>
 
-                        <div class="form-group">
-                            <label for="expiryDate">Fecha caducidad (MM/AAAA)</label>
-                            <input type="text" class="form-control" id="expiryDate" name="Caducidad"
-                                placeholder="MM/YYYY" required pattern="[0-9]{2}/[0-9]{4}" title="Formato MM/YYYY">
-                        </div>
+                        <label for="exchange">Tipo de moneda</label>
+                        <select class="form-control" id="exchange">
+                            <option>USD</option>
+                            <option>EUR</option>
+                        </select>
 
-                        <div class="form-group">
-                            <label for="securityCode">Código seguridad</label>
-                            <input type="text" class="form-control" id="securityCode" name="CVV2" placeholder="CVV"
-                                pattern="[0-9]{3,4}"
-                                required>
+                        <div class="form-group mt-3 d-flex justify-content-end px-1">
+                            <button type="button" class="btn btn-secondary" onclick="window.history.back()">Cancelar</button>
                         </div>
                     </div>
                 </div>
 
                 <hr>
-                <div class="form-group mt-3 d-flex justify-content-between px-1">
-                    <button type="button" class="btn btn-secondary" onclick="window.history.back()">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Pagar</button>
-                </div>
+                
             </form>
+            <div id="paypal-button-container" class="mt-2"></div>
         </div>
 
         <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <script
+            src="https://www.paypal.com/sdk/js?client-id=AZV5IPp4UdVUiJwbqzzeeMVff2g40wUP5VJlkIx-LWNuAIpbEarZsXxfLhZ76KTuXKluU5l1kPm6iTnW&disable-funding=credit,card"></script>
         <script>
             "use strict"
-
-            const cryKey = "87401456"
-            const MerchantID = "082108630"
-            const AcquirerBIN = "0000554002"
-            const TerminalID = "00000003"
-            const NumOp = "prueba"
-            let exEx = 0
-            const Exponente = 2
-            const Cifrado = "SHA2"
-            const URL_NOK = "https://edugo-unir.onrender.com/car"
-            const URL_OK = "https://edugo-unir.onrender.com"
-
-            const handleCrySHA256 = async (impor) => {
-                const encoder = new TextEncoder()
-                const data = encoder.encode(`${cryKey}${MerchantID}${AcquirerBIN}${TerminalID}${NumOp}${impor}${exEx}${Exponente}${Cifrado}${URL_OK}${URL_NOK}`)
-                const hashbuffer = await crypto.subtle.digest("SHA-256", data)
-                const hashArray = Array.from(new Uint8Array(hashbuffer))
-                const hashHex = hashArray.map(b => b.toString(16).padStart(2,'0')).join('')
-                return hashHex
-            }
-
+            let amount = document.getElementById("amount")
+            let exchange = document.getElementById("exchange")
             const handlerCurrencyChange = async () => {
-                const amount = document.getElementById("amount")
-                const exchange = document.getElementById("exchange").value
-                const tp = exchange == "EURO" ? document.getElementById("PriceEUR").value : document.getElementById("PriceUSD").value
+                amount = document.getElementById("amount")
+                exchange = document.getElementById("exchange")
+                const tp = exchange.value == "EUR" ? document.getElementById("PriceEUR").value : document.getElementById("PriceUSD").value
                 amount.value = tp
-                exchange === "EURO" ? (document.getElementById("metaEx").value = 978, exEx = 978) : (document.getElementById("metaEx").value = 840, exEx = 840)
-
-                document.getElementById("sign").value = await handleCrySHA256(tp)
 
             }
             document.getElementById("exchange").addEventListener("change", handlerCurrencyChange)
+
+            paypal.Buttons({
+                style: {
+                    layout: 'vertical', 
+                    color: 'blue', 
+                    shape: 'rect', 
+                    label: 'paypal' 
+                },
+                createOrder: function (data, actions) {
+                    return actions.order.create({
+                        purchase_units: [{
+                            amount: {
+                                currency: exchange.value,
+                                value: amount.value
+                            }
+                        }]
+                    });
+                },
+
+                onApprove: function (data, actions) {
+                    return actions.order.capture().then(function (details) {
+                        alert('Pago completado: ' + details.payer.name.given_name);
+                    });
+                }
+            }).render('#paypal-button-container');
 
         </script>
 
