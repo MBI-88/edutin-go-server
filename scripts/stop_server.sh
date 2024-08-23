@@ -1,1 +1,1 @@
-sudo kill -f web || ture
+sudo systemctl stop web
