@@ -6,6 +6,7 @@ RUN go mod tidy && \
     CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o ./web
 
 
+
 FROM alpine:3.20 as deployment
 WORKDIR /app
 ARG PORT=80
