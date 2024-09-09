@@ -1,0 +1,268 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CodePipeline edugo
+
+Parameters:
+  RoleCodePipeline:
+    Description: Role name
+    Type: String
+    Default: edugo-server
+
+  RolePolicy:
+    Description: Policy role
+    Type: String
+    Default: edugo-policy
+
+  InstanceType:
+    Description: Instance for ec2
+    Type: String
+    Default: t2.micro
+
+  SG:
+    Description: Security group
+    Type: AWS::EC2::SecurityGroup::Id
+    Default: sg-0c8af926ac3390d7e
+
+  AMIId:
+    Description: Ami ID
+    Type: AWS::EC2::Image::Id
+    Default: ami-04a81a99f5ec58529
+
+  KeyName:
+    Description: EC2 KeyPair Name
+    Type: AWS::EC2::KeyPair::KeyName
+    Default: ec2
+
+  App:
+    Type: String
+    Default: EdugoServer
+
+  DeployGroup:
+    Type: String
+    Default: edugo-g
+
+  EC2Name:
+    Type: String
+    Default: edugo-ec2
+  
+  RoleInstanceProfile:
+    Description: Role name for EC2 instances
+    Type: String
+    Default: edugo-instance
+
+Resources:
+  RolePipeline:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref RoleCodePipeline
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - codepipeline.amazonaws.com
+                - codedeploy.amazonaws.com
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Description: Role for code deploy, code pipeline, etc.
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEC2FullAccess
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+        - arn:aws:iam::aws:policy/AWSCodeDeployFullAccess
+        - arn:aws:iam::aws:policy/AWSCodeBuildAdminAccess
+      MaxSessionDuration: 3600
+      Path: "/"
+      Policies:
+        - PolicyName: !Ref RolePolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:*
+                Resource:
+                  - !Sub arn:aws:s3:::${ArtifactBucket}/*
+                  - !Sub arn:aws:s3:::${ArtifactBucket}
+              - Effect: Allow
+                Action:
+                  - codebuild:StartBuild
+                  - codebuild:BatchGetBuilds
+                  - iam:PassRole
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - codestar-connections:UseConnection
+                Resource:
+                  - !Ref CodeStarConnection
+              - Effect: Allow
+                Action:
+                  - codedeploy:*
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeInstances
+                  - ec2:DescribeInstanceStatus
+                  - ec2:DescribeRegions
+                  - ec2:DescribeTags
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - iam:PassRole
+                  - iam:CreateInstanceProfile
+                Resource: "*"
+
+  RoleInstance:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref RoleInstanceProfile
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - codedeploy.amazonaws.com
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEC2FullAccess
+        - arn:aws:iam::aws:policy/AWSCodeDeployFullAccess
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+        - arn:aws:iam::aws:policy/AWSCodeBuildAdminAccess
+      Description: "Role for CodeDeploy and EC2 instances"
+
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+        - !Ref RoleInstance
+
+  ArtifactBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+
+  CodeStarConnection:
+    Type: "AWS::CodeStarConnections::Connection"
+    Properties:
+      ConnectionName: edugo-connection
+      ProviderType: GitHub
+
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      AdditionalInfo: "Cloudformation EC2 test"
+      AvailabilityZone: "us-east-1c"
+      DisableApiTermination: false
+      EbsOptimized: false
+      IamInstanceProfile: !Ref InstanceProfile
+      ImageId: !Ref AMIId
+      InstanceInitiatedShutdownBehavior: "stop"
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      Monitoring: false
+      SecurityGroupIds:
+        - !Ref SG
+      Tags:
+        - Key: "Name"
+          Value: !Ref EC2Name
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          sudo apt-get update -y
+          sudo apt install -y golang-go git libcap2-bin
+          sudo apt-get install -y ruby wget
+          cd /home/ubuntu
+          wget https://aws-codedeploy-us-east-1.s3.amazonaws.com/latest/install
+          chmod +x ./install
+          sudo ./install auto
+          sudo service codedeploy-agent start
+          cd /var
+          sudo mkdir www && sudo mkdir www/html
+
+  EIP:
+    Type: AWS::EC2::EIP
+
+  EIPAssociation:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      InstanceId: !Ref EC2Instance
+      EIP: !Ref EIP
+
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      ArtifactStore:
+        Type: S3
+        Location: !Ref ArtifactBucket
+      Name: "edugo-Pipeline"
+      RoleArn: !GetAtt RolePipeline.Arn
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: "SourceAction"
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Version: "1"
+                Provider: CodeStarSourceConnection
+              Configuration:
+                BranchName: main
+                FullRepositoryId: MBI-88/edutin-go-server
+                ConnectionArn: !Ref CodeStarConnection
+              OutputArtifacts:
+                - Name: SourceOutput
+              RoleArn: !GetAtt RolePipeline.Arn
+              RunOrder: 1
+
+        - Name: Deploy
+          Actions:
+            - Name: DeployToEC2
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CodeDeploy
+                Version: "1"
+              InputArtifacts:
+                - Name: SourceOutput
+              Configuration:
+                ApplicationName: !Ref CodeDeployApplication
+                DeploymentGroupName: !Ref CodeDeployDeploymentGroup
+              RunOrder: 1
+
+  CodeDeployApplication:
+    Type: AWS::CodeDeploy::Application
+    Properties:
+      ComputePlatform: "Server"
+      ApplicationName: !Ref App
+
+  CodeDeployDeploymentGroup:
+    Type: AWS::CodeDeploy::DeploymentGroup
+    Properties:
+      ApplicationName: !Ref App
+      DeploymentGroupName: !Ref DeployGroup
+      ServiceRoleArn: !GetAtt RolePipeline.Arn
+      DeploymentConfigName: CodeDeployDefault.OneAtATime
+      Ec2TagFilters:
+        - Key: Name
+          Value: !Ref EC2Name
+          Type: KEY_AND_VALUE
+      # Tag the EC2 instance for CodeDeploy
+      AutoScalingGroups: []
+      OnPremisesInstanceTagFilters: []
+
+Outputs:
+  CodePipelineRoleArn:
+    Value: !GetAtt RolePipeline.Arn
+    Description: "The ARN of the CodePipeline Service Role"
+  CodeDeployRoleArn:
+    Value: !GetAtt RolePipeline.Arn
+    Description: "The ARN of the CodeDeploy Service Role"
+  InstanceId:
+    Description: "Instance ID of the EC2 instance"
+    Value: !Ref EC2Instance
+  PublicIP:
+    Description: "Elastic IP address of the EC2 instance"
+    Value: !Ref EIP
